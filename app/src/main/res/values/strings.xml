@@ -15,6 +15,4 @@
     <string name="update_allow_install">이 앱의 설치 허용을 켠 뒤 돌아오면 다운로드를 이어갑니다</string>
     <string name="update_downloading">업데이트를 다운로드하는 중…</string>
     <string name="update_failed">다운로드에 실패했습니다</string>
-    <string name="tab_video">영상</string>
-    <string name="tab_music">뮤직</string>
 </resources>

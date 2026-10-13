@@ -38,7 +38,6 @@
                 <data android:host="www.youtube.com" />
                 <data android:host="youtube.com" />
                 <data android:host="youtu.be" />
-                <data android:host="music.youtube.com" />
             </intent-filter>
         </activity>
 
