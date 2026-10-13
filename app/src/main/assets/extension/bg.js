@@ -116,3 +116,32 @@
     }
   } catch (e) {}
 })();
+
+// 오래 백그라운드에 있다가 돌아오면 영상 주소가 만료돼 '오류가 발생했습니다(재생 ID …)'가 뜬다.
+// 이 오류가 보이면 보던 위치(t=)를 붙여 페이지를 다시 불러온다. 같은 영상은 1분에 한 번만 시도.
+(function () {
+  const ERR = /재생 ID|playback ID|오류가 발생했습니다|An error occurred/i;
+  const videoId = () => new URLSearchParams(location.search).get("v");
+  setInterval(() => {
+    const id = videoId();
+    if (!id || !location.pathname.startsWith("/watch")) return;
+    const v = document.querySelector("video");
+    if (v && v.currentTime > 1) {
+      try { sessionStorage.setItem("bgtube-t-" + id, String(Math.floor(v.currentTime))); } catch (e) {}
+    }
+    let found = false;
+    for (const el of document.querySelectorAll("[class*='error']")) {
+      if (ERR.test(el.textContent || "")) { found = true; break; }
+    }
+    if (!found) return;
+    try {
+      const key = "bgtube-retry-" + id;
+      if (Date.now() - (+sessionStorage.getItem(key) || 0) < 60000) return;
+      sessionStorage.setItem(key, String(Date.now()));
+      const t = sessionStorage.getItem("bgtube-t-" + id);
+      const u = new URL(location.href);
+      if (t) u.searchParams.set("t", t + "s");
+      location.replace(u.toString());
+    } catch (e) {}
+  }, 2000);
+})();
