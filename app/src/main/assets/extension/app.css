@@ -5,3 +5,6 @@ html, body { -webkit-touch-callout: none !important; }
 body *:not(input):not(textarea):not([contenteditable]):not([contenteditable] *) {
   -webkit-user-select: none !important; user-select: none !important;
 }
+
+/* 유튜브 웹의 아래 막대는 숨기고 앱의 막대를 쓴다 */
+ytm-pivot-bar-renderer { display: none !important; }

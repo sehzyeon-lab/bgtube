@@ -32,6 +32,10 @@ object Browser {
     var onFullScreen: ((Boolean) -> Unit)? = null
     var onSessionLost: (() -> Unit)? = null
     var onPlaying: ((Boolean) -> Unit)? = null
+    /** 현재 페이지 URL 이 바뀌었을 때 (유튜브는 SPA 라 history API 이동도 포함). */
+    var onUrl: ((String) -> Unit)? = null
+    var currentUrl: String = START_URL
+        private set
 
     fun session(context: Context): GeckoSession = main ?: create(context, START_URL).also { main = it }
 
@@ -57,6 +61,18 @@ object Browser {
         s.navigationDelegate = object : GeckoSession.NavigationDelegate {
             override fun onCanGoBack(session: GeckoSession, canGoBack: Boolean) {
                 if (session === main) this@Browser.canGoBack = canGoBack
+            }
+
+            override fun onLocationChange(
+                session: GeckoSession,
+                url: String?,
+                perms: MutableList<GeckoSession.PermissionDelegate.ContentPermission>,
+                hasUserGesture: Boolean,
+            ) {
+                if (session === main && url != null) {
+                    currentUrl = url
+                    onUrl?.invoke(url)
+                }
             }
 
             override fun onLoadRequest(

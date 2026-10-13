@@ -11,6 +11,8 @@ import android.os.Bundle
 import android.util.Rational
 import android.view.View
 import android.view.WindowManager
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -23,11 +25,33 @@ import org.mozilla.geckoview.GeckoView
 class MainActivity : AppCompatActivity() {
     private lateinit var geckoView: GeckoView
     private var fullscreen = false
+    private lateinit var navBar: View
+    private lateinit var navDivider: View
+    private var night = false
+
+    private enum class Tab(val key: String, val url: String) {
+        HOME("home", "https://m.youtube.com/"),
+        SHORTS("shorts", "https://m.youtube.com/shorts"),
+        SUBS("subs", "https://m.youtube.com/feed/subscriptions"),
+        YOU("you", "https://m.youtube.com/feed/you"),
+    }
+    private var selected = Tab.HOME
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         geckoView = findViewById(R.id.gecko)
+        navBar = findViewById(R.id.navbar)
+        navDivider = findViewById(R.id.nav_divider)
+        for (tab in Tab.values()) {
+            findViewById<View>(navId(tab)).setOnClickListener {
+                selected = tab
+                paintNav()
+                Browser.loadUrl(this, tab.url)
+            }
+        }
+        Browser.onUrl = { url -> runOnUiThread { tabFor(url)?.let { selected = it; paintNav() } } }
+        tabFor(Browser.currentUrl)?.let { selected = it }
 
         applySystemBarTheme()
 
@@ -114,8 +138,44 @@ class MainActivity : AppCompatActivity() {
         Browser.session(this).setActive(true)
     }
 
+    private fun navId(t: Tab) = resources.getIdentifier("nav_${t.key}", "id", packageName)
+
+    /** URL 로 어느 탭인지 판단. 영상 화면 등은 null (선택 유지). */
+    private fun tabFor(url: String): Tab? {
+        val path = android.net.Uri.parse(url).path ?: "/"
+        return when {
+            path.startsWith("/shorts") -> Tab.SHORTS
+            path.startsWith("/feed/subscriptions") -> Tab.SUBS
+            path.startsWith("/feed/you") || path.startsWith("/feed/library") ||
+                path.startsWith("/feed/history") || path.startsWith("/playlist") -> Tab.YOU
+            path == "/" || path.isEmpty() || path.startsWith("/feed/trending") -> Tab.HOME
+            else -> null
+        }
+    }
+
+    private fun paintNav() {
+        val fg = if (night) 0xFFFFFFFF.toInt() else 0xFF0F0F0F.toInt()
+        val dim = if (night) 0x99FFFFFF.toInt() else 0x990F0F0F.toInt()
+        val bg = if (night) 0xFF0F0F0F.toInt() else 0xFFFFFFFF.toInt()
+        navBar.setBackgroundColor(bg)
+        navDivider.setBackgroundColor(if (night) 0x33FFFFFF else 0x22000000)
+        for (tab in Tab.values()) {
+            val on = tab == selected
+            val c = if (on) fg else dim
+            findViewById<ImageView>(resources.getIdentifier("nav_${tab.key}_icon", "id", packageName))
+                .setColorFilter(c)
+            findViewById<TextView>(resources.getIdentifier("nav_${tab.key}_label", "id", packageName)).apply {
+                setTextColor(c)
+                paint.isFakeBoldText = on
+                invalidate()
+            }
+        }
+    }
+
     private fun setFullscreen(enabled: Boolean) {
         fullscreen = enabled
+        navBar.visibility = if (enabled) View.GONE else View.VISIBLE
+        navDivider.visibility = navBar.visibility
         val c = WindowInsetsControllerCompat(window, window.decorView)
         if (enabled) {
             c.hide(WindowInsetsCompat.Type.systemBars())
@@ -161,7 +221,7 @@ class MainActivity : AppCompatActivity() {
 
     /** 기기 다크/라이트 모드에 맞춰 배경과 상태바·내비게이션 바 아이콘 색을 맞춘다 (유튜브 화면과 이어 보이게). */
     private fun applySystemBarTheme() {
-        val night = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+        night = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
             Configuration.UI_MODE_NIGHT_YES
         val color = if (night) 0xFF0F0F0F.toInt() else 0xFFFFFFFF.toInt()
         findViewById<View>(R.id.root).setBackgroundColor(color)
@@ -175,6 +235,7 @@ class MainActivity : AppCompatActivity() {
             isAppearanceLightStatusBars = !night
             isAppearanceLightNavigationBars = !night
         }
+        paintNav()
     }
 
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration) {
@@ -185,6 +246,7 @@ class MainActivity : AppCompatActivity() {
         Browser.onFullScreen = null
         Browser.onSessionLost = null
         Browser.onPlaying = null
+        Browser.onUrl = null
         geckoView.releaseSession()
         super.onDestroy()
     }
