@@ -4,7 +4,10 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.graphics.Color
 import android.os.Bundle
+import android.view.View
+import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -17,13 +20,24 @@ import org.mozilla.geckoview.GeckoView
 class MainActivity : AppCompatActivity() {
     private lateinit var geckoView: GeckoView
     private var attached = false
+    private lateinit var tabBar: View
+    private lateinit var tabVideo: TextView
+    private lateinit var tabMusic: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         geckoView = findViewById(R.id.gecko)
 
-        val root = findViewById<android.view.View>(R.id.root)
+        tabBar = findViewById(R.id.tabbar)
+        tabVideo = findViewById(R.id.tab_video)
+        tabMusic = findViewById(R.id.tab_music)
+        tabVideo.setOnClickListener { go(music = false) }
+        tabMusic.setOnClickListener { go(music = true) }
+        Browser.onUrl = { url -> runOnUiThread { highlight(url.contains("music.youtube.com")) } }
+        highlight(Browser.currentUrl.contains("music.youtube.com"))
+
+        val root = findViewById<View>(R.id.root)
         ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
             val bars = insets.getInsets(
                 WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime(),
@@ -64,6 +78,18 @@ class MainActivity : AppCompatActivity() {
         if (intent.action == Intent.ACTION_VIEW) Browser.loadUrl(this, data.toString())
     }
 
+    private fun go(music: Boolean) {
+        highlight(music)
+        Browser.loadUrl(this, if (music) Browser.MUSIC_URL else Browser.START_URL)
+    }
+
+    private fun highlight(music: Boolean) {
+        val on = Color.parseColor("#5EEAD4")
+        val off = Color.parseColor("#99FFFFFF")
+        tabVideo.setTextColor(if (music) off else on)
+        tabMusic.setTextColor(if (music) on else off)
+    }
+
     private fun attachSession(force: Boolean = false) {
         if (attached && !force) return
         if (attached) geckoView.releaseSession()
@@ -91,6 +117,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setFullscreen(enabled: Boolean) {
         val c = WindowInsetsControllerCompat(window, window.decorView)
+        tabBar.visibility = if (enabled) View.GONE else View.VISIBLE
         if (enabled) {
             c.hide(WindowInsetsCompat.Type.systemBars())
             c.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
@@ -101,6 +128,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         Browser.onFullScreen = null
+        Browser.onUrl = null
         Browser.onSessionLost = null
         if (attached) geckoView.releaseSession()
         super.onDestroy()

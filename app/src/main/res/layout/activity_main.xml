@@ -1,12 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="@color/bg">
 
     <org.mozilla.geckoview.GeckoView
         android:id="@+id/gecko"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-</FrameLayout>
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:id="@+id/tabbar"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:orientation="horizontal"
+        android:background="#15151C">
+
+        <TextView
+            android:id="@+id/tab_video"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/tab_video"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:background="?attr/selectableItemBackground" />
+
+        <TextView
+            android:id="@+id/tab_music"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/tab_music"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:background="?attr/selectableItemBackground" />
+    </LinearLayout>
+</LinearLayout>

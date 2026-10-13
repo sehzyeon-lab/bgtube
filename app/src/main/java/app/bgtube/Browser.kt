@@ -27,6 +27,8 @@ object Browser {
     var canGoBack = false
     var onFullScreen: ((Boolean) -> Unit)? = null
     var onSessionLost: (() -> Unit)? = null
+    var onUrl: ((String) -> Unit)? = null
+    var currentUrl: String = START_URL
 
     fun session(context: Context): GeckoSession {
         session?.let { return it }
@@ -44,7 +46,12 @@ object Browser {
         return s
     }
 
-    fun loadUrl(context: Context, url: String) = session(context).loadUri(url)
+    const val MUSIC_URL = "https://music.youtube.com/"
+
+    fun loadUrl(context: Context, url: String) {
+        currentUrl = url
+        session(context).loadUri(url)
+    }
 
     private fun installDelegates(app: Context, s: GeckoSession) {
         s.navigationDelegate = object : GeckoSession.NavigationDelegate {
@@ -59,6 +66,13 @@ object Browser {
                 val scheme = request.uri.substringBefore(':').lowercase()
                 val ok = scheme in setOf("http", "https", "about", "blob", "data", "javascript")
                 return GeckoResult.fromValue(if (ok) AllowOrDeny.ALLOW else AllowOrDeny.DENY)
+            }
+        }
+
+        s.progressDelegate = object : GeckoSession.ProgressDelegate {
+            override fun onPageStart(session: GeckoSession, url: String) {
+                currentUrl = url
+                onUrl?.invoke(url)
             }
         }
 
