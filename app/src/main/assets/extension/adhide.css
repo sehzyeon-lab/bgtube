@@ -1,0 +1,9 @@
+/* 피드/검색/영상 아래의 광고 카드 숨김 */
+ad-slot-renderer, ytm-ad-slot-renderer,
+ytm-promoted-sparkles-web-renderer, ytm-promoted-sparkles-text-search-renderer,
+ytm-promoted-video-renderer, ytm-companion-ad-renderer, ytm-display-ad-renderer,
+ytm-in-feed-ad-layout-renderer, ytm-rich-item-renderer:has(ad-slot-renderer),
+ytm-item-section-renderer:has(ad-slot-renderer),
+.ytp-ad-overlay-container, .ytp-ad-image-overlay, #player-ads {
+  display: none !important;
+}

@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "BgTube ad filter",
+  "version": "1.0",
+  "description": "Removes ads from YouTube player responses.",
+  "browser_specific_settings": { "gecko": { "id": "adblock@bgtube.app" } },
+  "host_permissions": ["*://*.youtube.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["prune.js"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "MAIN"
+    }
+  ]
+}
