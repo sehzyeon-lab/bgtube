@@ -1,0 +1,15 @@
+{
+  "manifest_version": 2,
+  "name": "BgTube background play",
+  "version": "1.0",
+  "description": "Keeps the page 'visible' so YouTube keeps playing in the background.",
+  "browser_specific_settings": { "gecko": { "id": "bgplay@bgtube.app" } },
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*", "*://youtube.com/*"],
+      "js": ["bg.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ]
+}

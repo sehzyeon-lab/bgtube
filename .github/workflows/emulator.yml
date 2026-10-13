@@ -1,0 +1,110 @@
+name: Emulator screenshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['**']
+    paths:
+      - 'app/**'
+      - '.github/workflows/emulator.yml'
+      - '.github/scripts/**'
+
+permissions:
+  contents: write
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Resolve GeckoView (x86_64)
+        id: gecko
+        run: .github/scripts/resolve-gecko.sh x86_64 | tee -a "$GITHUB_OUTPUT"
+
+      - name: Build APK for x86_64 emulator
+        run: >
+          ./gradlew --no-daemon assembleRelease
+          -PgeckoArtifact=${{ steps.gecko.outputs.artifact }}
+          -PgeckoVersion=${{ steps.gecko.outputs.version }}
+          -PappVersionCode=1 -PappVersionName=1.0.0
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/lib/android/sdk/ndk /usr/local/share/powershell /opt/microsoft || true
+          df -h / | tail -1
+
+      - name: Create & boot emulator
+        run: |
+          mkdir -p out/screenshots
+          exec > >(tee out/screenshots/boot-log.txt) 2>&1
+          set -x
+          ls -l /dev/kvm || true
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          export PATH="$SDK/cmdline-tools/latest/bin:$SDK/platform-tools:$SDK/emulator:$PATH"
+          for d in cmdline-tools/latest/bin platform-tools emulator; do echo "$SDK/$d" >> "$GITHUB_PATH"; done
+          IMG="system-images;android-34;google_apis;x86_64"
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "emulator" "platform-tools" "$IMG" > /tmp/sdkmanager.log 2>&1 || { tail -20 /tmp/sdkmanager.log; exit 1; }
+          export ANDROID_AVD_HOME="$HOME/.android/avd"; mkdir -p "$ANDROID_AVD_HOME"
+          echo no | avdmanager create avd -n ci -k "$IMG" -d pixel_6 --force > /tmp/avdmanager.log 2>&1 || true
+          CFG="$ANDROID_AVD_HOME/ci.avd/config.ini"
+          sed -i '/^disk.dataPartition.size/d' "$CFG"; echo "disk.dataPartition.size=2G" >> "$CFG"
+          sed -i '/^hw.ramSize/d' "$CFG"; echo "hw.ramSize=4096" >> "$CFG"
+          emulator -list-avds | grep -qx ci || { echo "== avdmanager.log =="; tail -20 /tmp/avdmanager.log; avdmanager list device -c | head -20; exit 1; }
+          nohup emulator -avd ci -no-window -gpu swiftshader_indirect -no-snapshot -no-audio -no-boot-anim -no-metrics -accel on > /tmp/emulator.log 2>&1 &
+          timeout 120 adb wait-for-device || { echo "== emulator.log =="; tail -40 /tmp/emulator.log; exit 1; }
+          for i in $(seq 1 90); do
+            [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ] && break
+            sleep 5
+          done
+          adb shell getprop sys.boot_completed | grep -q 1 || { echo "== emulator.log =="; tail -40 /tmp/emulator.log; exit 1; }
+          adb shell settings put global window_animation_scale 0
+          adb shell settings put global transition_animation_scale 0
+          adb shell settings put global animator_duration_scale 0
+
+      - name: Run app on emulator and take screenshots
+        timeout-minutes: 15
+        run: |
+          set -o pipefail
+          .github/scripts/emulator-test.sh app/build/outputs/apk/release/app-release.apk 2>&1 | tee out/screenshots/test-log.txt | tail -40
+          # 비어 있는 스크린샷이 있으면 실패 처리
+          ls out/screenshots/*.png | wc -l
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: emulator-output
+          path: out/
+
+      - name: Publish screenshots to 'screenshots' branch
+        if: always()
+        run: |
+          set -e
+          [ -d out/screenshots ] || exit 0
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          REPO_URL="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          rm -rf /tmp/shots && mkdir /tmp/shots && cd /tmp/shots
+          git init -q && git remote add origin "$REPO_URL"
+          git fetch -q origin screenshots 2>/dev/null && git checkout -q screenshots || git checkout -q -b screenshots
+          rm -rf latest && mkdir latest
+          cp "$GITHUB_WORKSPACE"/out/screenshots/* latest/
+          git add -A
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com \
+            commit -q -m "screenshots from ${GITHUB_SHA::7}" || exit 0
+          git push -q origin screenshots
