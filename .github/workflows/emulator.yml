@@ -2,12 +2,6 @@ name: Emulator screenshots
 
 on:
   workflow_dispatch:
-  push:
-    branches: ['**']
-    paths:
-      - 'app/**'
-      - '.github/workflows/emulator.yml'
-      - '.github/scripts/**'
 
 permissions:
   contents: write

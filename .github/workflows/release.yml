@@ -2,7 +2,7 @@ name: Build & Release APK
 
 on:
   push:
-    branches: ['**']
+    branches: [main]
     paths-ignore: ['**.md', 'docs/**']
   workflow_dispatch:
 
@@ -59,3 +59,23 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "BgTube $TAG" \
             --notes "GeckoView ${{ steps.gecko.outputs.version }} / commit ${GITHUB_SHA::7}"
+
+      - name: Build download page
+        run: .github/scripts/make-site.sh "v1.0.${{ github.run_number }}" app/build/outputs/apk/release/app-release.apk
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy-pages:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
