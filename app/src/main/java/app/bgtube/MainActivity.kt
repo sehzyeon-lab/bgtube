@@ -20,12 +20,14 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import org.mozilla.geckoview.GeckoView
 
 class MainActivity : AppCompatActivity() {
     private lateinit var geckoView: GeckoView
     private var fullscreen = false
     private lateinit var navBar: View
+    private lateinit var refresh: SwipeRefreshLayout
     private lateinit var navDivider: View
     private var night = false
 
@@ -42,6 +44,17 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         geckoView = findViewById(R.id.gecko)
         navBar = findViewById(R.id.navbar)
+        refresh = findViewById(R.id.refresh)
+        refresh.setColorSchemeColors(0xFFFF0033.toInt())
+        // 페이지가 맨 위일 때만 당겨서 새로고침. Shorts(아래로 끌기 = 이전 Shorts)와 전체화면에서는 끔.
+        refresh.setOnChildScrollUpCallback { _, _ ->
+            fullscreen || Browser.scrollY > 0 || android.net.Uri.parse(Browser.currentUrl).path?.startsWith("/shorts") == true
+        }
+        refresh.setOnRefreshListener {
+            Browser.session(this).reload()
+            refresh.postDelayed({ refresh.isRefreshing = false }, 8000) // 안전장치
+        }
+        Browser.onPageStop = { runOnUiThread { refresh.isRefreshing = false } }
         navDivider = findViewById(R.id.nav_divider)
         for (tab in Tab.values()) {
             findViewById<View>(navId(tab)).setOnClickListener {
@@ -248,6 +261,7 @@ class MainActivity : AppCompatActivity() {
         Browser.onSessionLost = null
         Browser.onPlaying = null
         Browser.onUrl = null
+        Browser.onPageStop = null
         geckoView.releaseSession()
         super.onDestroy()
     }

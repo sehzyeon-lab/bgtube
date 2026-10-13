@@ -36,6 +36,10 @@ object Browser {
     var onUrl: ((String) -> Unit)? = null
     var currentUrl: String = START_URL
         private set
+    /** 페이지 세로 스크롤 위치 (당겨서 새로고침 판단용). */
+    var scrollY = 0
+        private set
+    var onPageStop: (() -> Unit)? = null
     private var history: GeckoSession.HistoryDelegate.HistoryList? = null
 
     private fun isWatch(url: String) = android.net.Uri.parse(url).path?.startsWith("/watch") == true
@@ -123,6 +127,18 @@ object Browser {
                     Log.w(TAG, "share", e)
                     GeckoResult.fromValue(prompt.confirm(GeckoSession.PromptDelegate.SharePrompt.Result.FAILURE))
                 }
+            }
+        }
+
+        s.scrollDelegate = object : GeckoSession.ScrollDelegate {
+            override fun onScrollChanged(session: GeckoSession, scrollX: Int, scrollY: Int) {
+                if (session === main) this@Browser.scrollY = scrollY
+            }
+        }
+
+        s.progressDelegate = object : GeckoSession.ProgressDelegate {
+            override fun onPageStop(session: GeckoSession, success: Boolean) {
+                if (session === main) onPageStop?.invoke()
             }
         }
 

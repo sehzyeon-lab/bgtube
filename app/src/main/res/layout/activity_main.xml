@@ -6,11 +6,18 @@
     android:orientation="vertical"
     android:background="@color/bg">
 
-    <org.mozilla.geckoview.GeckoView
-        android:id="@+id/gecko"
+    <!-- 맨 위에서 아래로 끌어 새로고침 -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/refresh"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1">
+
+        <org.mozilla.geckoview.GeckoView
+            android:id="@+id/gecko"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <View
         android:id="@+id/nav_divider"
