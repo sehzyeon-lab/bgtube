@@ -73,11 +73,11 @@
 
 // 모바일 웹의 '앱 열기' 버튼/배너를 숨긴다.
 (function () {
-  const KEYS = ["앱 열기", "앱에서 열기", "Open app", "Open in app", "OPEN APP"];
+  const KEYS = ["앱 열기", "앱에서 열기", "앱으로 열기", "앱으로 보기", "YouTube 앱", "Open app", "Open App", "Open in app", "OPEN APP", "Get the app"];
   const hide = () => {
     for (const el of document.querySelectorAll("a, button")) {
       const t = (el.textContent || "").trim();
-      if (t && t.length <= 14 && KEYS.some((k) => t.includes(k))) el.style.display = "none";
+      if (t && t.length <= 20 && KEYS.some((k) => t.includes(k))) el.style.display = "none";
     }
   };
   let timer = 0;

@@ -16,4 +16,7 @@
     <string name="update_downloading">업데이트를 다운로드하는 중…</string>
     <string name="update_failed">다운로드에 실패했습니다</string>
     <string name="mini_expand">크게 보기</string>
+    <string name="sc_subs">구독</string>
+    <string name="sc_shorts">Shorts</string>
+    <string name="sc_you">내 페이지</string>
 </resources>

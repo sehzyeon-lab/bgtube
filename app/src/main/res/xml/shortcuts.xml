@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="subs"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/sc_subs">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="app.bgtube"
+            android:targetClass="app.bgtube.MainActivity"
+            android:data="https://m.youtube.com/feed/subscriptions" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="shorts"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/sc_shorts">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="app.bgtube"
+            android:targetClass="app.bgtube.MainActivity"
+            android:data="https://m.youtube.com/shorts" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="you"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/sc_you">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="app.bgtube"
+            android:targetClass="app.bgtube.MainActivity"
+            android:data="https://m.youtube.com/feed/you" />
+    </shortcut>
+</shortcuts>

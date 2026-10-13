@@ -1,0 +1,7 @@
+/* 웹 느낌을 줄이는 스타일: 탭 하이라이트/글자 선택/스크롤바/끝 튕김 제거 */
+* { -webkit-tap-highlight-color: transparent !important; }
+html { scrollbar-width: none !important; overscroll-behavior-y: none !important; }
+html, body { -webkit-touch-callout: none !important; }
+body *:not(input):not(textarea):not([contenteditable]):not([contenteditable] *) {
+  -webkit-user-select: none !important; user-select: none !important;
+}

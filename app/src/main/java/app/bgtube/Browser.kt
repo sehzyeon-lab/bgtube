@@ -130,6 +130,25 @@ object Browser {
             }
         }
 
+        s.promptDelegate = object : GeckoSession.PromptDelegate {
+            // 유튜브의 '공유' 버튼(navigator.share)을 안드로이드 기본 공유창으로 연결
+            override fun onSharePrompt(
+                session: GeckoSession,
+                prompt: GeckoSession.PromptDelegate.SharePrompt,
+            ): GeckoResult<GeckoSession.PromptDelegate.PromptResponse>? {
+                val body = prompt.uri ?: prompt.text ?: ""
+                val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, body)
+                prompt.title?.let { send.putExtra(Intent.EXTRA_SUBJECT, it) }
+                return try {
+                    app.startActivity(Intent.createChooser(send, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    GeckoResult.fromValue(prompt.confirm(GeckoSession.PromptDelegate.SharePrompt.Result.SUCCESS))
+                } catch (e: Exception) {
+                    Log.w(TAG, "share", e)
+                    GeckoResult.fromValue(prompt.confirm(GeckoSession.PromptDelegate.SharePrompt.Result.FAILURE))
+                }
+            }
+        }
+
         s.contentDelegate = object : GeckoSession.ContentDelegate {
             override fun onFullScreen(session: GeckoSession, fullScreen: Boolean) {
                 if (session === main) onFullScreen?.invoke(fullScreen)

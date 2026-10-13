@@ -42,6 +42,8 @@ class MainActivity : AppCompatActivity() {
             Playback.media?.let { if (Playback.playing) it.pause() else it.play() }
         }
 
+        applySystemBarTheme()
+
         val root = findViewById<android.view.View>(R.id.root)
         ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
             val bars = insets.getInsets(
@@ -174,6 +176,29 @@ class MainActivity : AppCompatActivity() {
                     PictureInPictureParams.Builder().setAspectRatio(Rational(16, 9)).build(),
                 )
             } catch (e: Exception) { android.util.Log.w("BgTube", "pip", e) }
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        applySystemBarTheme()
+    }
+
+    /** 기기 다크/라이트 모드에 맞춰 배경과 상태바·내비게이션 바 아이콘 색을 맞춘다 (유튜브 화면과 이어 보이게). */
+    private fun applySystemBarTheme() {
+        val night = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+            Configuration.UI_MODE_NIGHT_YES
+        val color = if (night) 0xFF0F0F0F.toInt() else 0xFFFFFFFF.toInt()
+        findViewById<View>(R.id.root).setBackgroundColor(color)
+        window.decorView.setBackgroundColor(color)
+        @Suppress("DEPRECATION")
+        run {
+            window.statusBarColor = color
+            window.navigationBarColor = color
+        }
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            isAppearanceLightStatusBars = !night
+            isAppearanceLightNavigationBars = !night
         }
     }
 
