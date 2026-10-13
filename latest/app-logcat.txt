@@ -1,0 +1,57 @@
+10-13 02:41:25.616  4538  4538 D GeckoRuntime: Lifecycle: onCreate
+10-13 02:41:25.625  4538  4538 D GeckoRuntime: Lifecycle: onStart
+10-13 02:41:25.625  4538  4538 D GeckoRuntime: Lifecycle: onResume
+10-13 02:41:27.433  4538  4563 I GeckoConsole: No chrome package registered for chrome://browser/content/built_in_addons.json
+10-13 02:41:28.609  4538  4563 W GeckoEventDispatcher: No listener for GeckoView:WebExtension:OnInstalling
+10-13 02:41:28.625  4538  4563 W GeckoEventDispatcher: No listener for GeckoView:WebExtension:OnInstalled
+10-13 02:41:28.630  4538  4563 W GeckoEventDispatcher: No listener for GeckoView:WebExtension:OnReady
+10-13 02:41:28.630  4538  4563 W GeckoEventDispatcher: No listener for GeckoView:WebExtension:OnOptionalPermissionsChanged
+10-13 02:41:28.630  4538  4563 W GeckoEventDispatcher: No listener for GeckoView:WebExtension:OnOptionalPermissionsChanged
+10-13 02:41:41.535  4538  4563 E GeckoConsole: [JavaScript Error: "TypeError: can't access property "WindowEventDispatcher", win is null" {file: "resource://gre/modules/GeckoViewSessionStore.sys.mjs" line: 149}]
+10-13 02:41:41.535  4538  4563 E GeckoConsole: onTabStateUpdate@resource://gre/modules/GeckoViewSessionStore.sys.mjs:149:5
+10-13 02:41:41.535  4538  4563 E GeckoConsole: updateSessionStoreFromTabListener@resource://gre/modules/GeckoViewSessionStore.sys.mjs:241:10
+10-13 02:41:41.535  4538  4563 E GeckoConsole: SSF_updateSessionStore@resource://gre/modules/SessionStoreFunctions.sys.mjs:45:27
+10-13 02:41:41.535  4538  4563 E GeckoConsole: UpdateSessionStore@resource://gre/modules/SessionStoreFunctions.sys.mjs:15:46
+10-13 02:42:25.670  4880  4880 I AndroidRuntime: VM exiting with result code 0, cleanup skipped.
+10-13 02:43:45.753   520   665 I WindowManager: ANR in Window{919d2f7 u0 app.bgtube/app.bgtube.MainActivity}. Reason:Input dispatching timed out (919d2f7 app.bgtube/app.bgtube.MainActivity (server) is not responding. Waited 5009ms for MotionEvent(deviceId=-1, eventTime=188336000000, source=TOUCHSCREEN, displayId=0, action=UP, actionButton=0x00000000, flags=0x00000000, metaState=0x00000000, buttonState=0x00000000, classification=NONE, edgeFlags=0x00000000, xPrecision=1.0, yPrecision=1.0, xCursorPosition=nan, yCursorPosition=nan, pointers=[0: (540.0, 408.0)]), policyFlags=0x6b000000)
+10-13 02:43:48.823   520  6472 E ActivityManager: ANR in app.bgtube (app.bgtube/.MainActivity)
+10-13 02:47:18.646   520  6800 E ActivityManager: ANR in com.android.systemui
+10-13 02:47:28.660   520  6992 E ActivityManager: ANR in com.google.android.apps.nexuslauncher
+10-13 02:47:30.664  5522  6760 E AndroidRuntime: FATAL EXCEPTION: lowpool[34]
+10-13 02:47:30.664  5522  6760 E AndroidRuntime: Process: com.google.android.gms.persistent, PID: 5522
+10-13 02:47:30.664  5522  6760 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause
+10-13 02:47:30.810  1087  1087 D AndroidRuntime: Shutting down VM
+10-13 02:47:30.810  1087  1087 E AndroidRuntime: FATAL EXCEPTION: main
+10-13 02:47:30.810  1087  1087 E AndroidRuntime: Process: com.android.phone, PID: 1087
+10-13 02:47:30.810  1087  1087 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause
+10-13 02:47:30.954  5593  5593 D AndroidRuntime: Shutting down VM
+10-13 02:47:30.954  5593  5593 E AndroidRuntime: FATAL EXCEPTION: main
+10-13 02:47:30.954  5593  5593 E AndroidRuntime: Process: com.google.android.gms, PID: 5593
+10-13 02:47:30.954  5593  5593 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause
+10-13 02:47:30.965  7006  7006 D AndroidRuntime: Shutting down VM
+10-13 02:47:30.965  7006  7006 E AndroidRuntime: FATAL EXCEPTION: main
+10-13 02:47:30.965  7006  7006 E AndroidRuntime: PID: 7006
+10-13 02:47:30.965  7006  7006 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause
+10-13 02:47:31.215  5522  6797 E AndroidRuntime: FATAL EXCEPTION: lowpool[35]
+10-13 02:47:31.215  5522  6797 E AndroidRuntime: Process: com.google.android.gms.persistent, PID: 5522
+10-13 02:47:31.215  5522  6797 E AndroidRuntime: cfrm: Complete with: result null
+10-13 02:47:31.215  5522  6797 E AndroidRuntime: 	at cfsn.H(:com.google.android.gms@231818047@23.18.18 (190800-535401451):5)
+10-13 02:47:31.215  5522  6797 E AndroidRuntime: 	at cfsn.B(:com.google.android.gms@231818047@23.18.18 (190800-535401451):2)
+10-13 02:47:31.215  5522  6797 E AndroidRuntime: 	at cfst.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):3)
+10-13 02:47:31.215  5522  6797 E AndroidRuntime: 	at aced.c(:com.google.android.gms@231818047@23.18.18 (190800-535401451):6)
+10-13 02:47:31.215  5522  6797 E AndroidRuntime: 	at aced.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):7)
+10-13 02:47:31.215  5522  6797 E AndroidRuntime: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-13 02:47:31.215  5522  6797 E AndroidRuntime: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-13 02:47:31.215  5522  6797 E AndroidRuntime: 	at acjn.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):0)
+10-13 02:47:31.215  5522  6797 E AndroidRuntime: 	at java.lang.Thread.run(Thread.java:1012)
+10-13 02:47:31.215  5522  6797 E AndroidRuntime: 	Suppressed: dfhy: 
+10-13 02:47:31.460  1851  2211 E AndroidRuntime: FATAL EXCEPTION: GoogleApiHandler
+10-13 02:47:31.460  1851  2211 E AndroidRuntime: Process: com.google.android.googlequicksearchbox:search, PID: 1851
+10-13 02:47:31.460  1851  2211 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause
+10-13 02:47:32.376  1715  1715 D AndroidRuntime: Shutting down VM
+10-13 02:47:32.376  1715  1715 E AndroidRuntime: FATAL EXCEPTION: main
+10-13 02:47:32.376  1715  1715 E AndroidRuntime: Process: com.google.android.googlequicksearchbox:interactor, PID: 1715
+10-13 02:47:32.376  1715  1715 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause
+10-13 02:47:36.642  7059  7059 D AndroidRuntime: >>>>>> START com.android.internal.os.ZygoteInit uid 0 <<<<<<
+10-13 02:47:36.659  7059  7059 I AndroidRuntime: Using default boot image
+10-13 02:47:36.660  7059  7059 I AndroidRuntime: Leaving lock profiling enabled

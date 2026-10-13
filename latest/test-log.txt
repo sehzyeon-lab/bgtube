@@ -1,0 +1,29 @@
+Performing Streamed Install
+Success
+Starting: Intent { cmp=app.bgtube/.MainActivity }
+--- diag: after-launch ---
+4538
+      - ConnectionRecord{b878602 u0 CR app.bgtube/org.mozilla.gecko.crashhelper.CrashHelper:@4655b4d flags=0x1}
+      - ServiceRecord{32373a5 u0 app.bgtube/org.mozilla.gecko.crashhelper.CrashHelper}
+        app.bgtube/org.mozilla.gecko.crashhelper.CrashHelper<=Proc{4538:app.bgtube/u0a192}
+        app.bgtube/org.mozilla.gecko.crashhelper.CrashHelper<=Proc{4538:app.bgtube/u0a192}
+10-13 02:42:21.414  4538  4563 D GeckoIdleService: Get idle time: time since reset 52750 msec
+Starting: Intent { act=android.intent.action.VIEW dat=https://m.youtube.com/... pkg=app.bgtube }
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+--- diag: after-play ---
+10-13 02:44:28.681  4538  4563 D GeckoIdleService: Get idle time: time since reset 180016 msec
+10-13 02:44:28.681  4538  4563 D GeckoIdleService: Idle timer callback: current idle time 180016 msec
+10-13 02:44:28.681  4538  4563 D GeckoIdleService: next timeout 4294967114983 msec from now
+10-13 02:44:28.681  4538  4563 D GeckoIdleService: SetTimerExpiryIfBefore: next timeout 4294967114983 msec from now
+10-13 02:44:28.681  4538  4563 D GeckoIdleService: reset timer expiry to 4294967114993 msec from now
+10-13 02:44:28.681  4538  4563 D GeckoIdleService: Idle timer callback: tell observer 0x70e400344000 user is idle
+10-13 02:44:28.681  4538  4563 D GeckoIdleService: Notifying idle-daily observers
+cmd: Can't find service: statusbar
+cmd: Can't find service: statusbar
+      state=PlaybackState {state=ERROR(7), position=0, buffered position=0, speed=0.0, updated=27880, actions=0, custom actions=[], active item id=-1, error=Bluetooth audio disconnected}
+      state=PlaybackState {state=ERROR(7), position=0, buffered position=0, speed=0.0, updated=27904, actions=0, custom actions=[], active item id=-1, error=Bluetooth audio disconnected}
+      state=PlaybackState {state=ERROR(7), position=0, buffered position=0, speed=0.0, updated=30676, actions=0, custom actions=[], active item id=-1, error=Bluetooth audio disconnected}
+      state=PlaybackState {state=ERROR(7), position=0, buffered position=0, speed=0.0, updated=30730, actions=0, custom actions=[], active item id=-1, error=Bluetooth audio disconnected}
+      state=PlaybackState {state=NONE(0), position=0, buffered position=0, speed=1.0, updated=32782, actions=8192, custom actions=[], active item id=-1, error=null}
+      state=PlaybackState {state=NONE(0), position=0, buffered position=0, speed=0.0, updated=35539, actions=2409991, custom actions=[Action:mName='Rewind 10 seconds, mIcon=2131234345, mExtras=null, Action:mName='Fast forward 30 second, mIcon=2131234125, mExtras=null, Action:mName='Skip to next episode, mIcon=2131234405, mExtras=null], active item id=-1, error=null}
+      state=PlaybackState {state=ERROR(7), position=0, buffered position=0, speed=1.0, updated=37916, actions=11828, custom actions=[], active item id=-1, error=Please sign in to YouTube Music.}
