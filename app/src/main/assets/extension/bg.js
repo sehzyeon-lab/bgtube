@@ -93,22 +93,6 @@
   });
 })();
 
-// 그래도 재생되는 영상 광고는 끝으로 넘기고 '건너뛰기' 버튼을 누른다.
-(function () {
-  setInterval(() => {
-    const ad = document.querySelector(".ad-showing, .ad-interrupting");
-    if (!ad) return;
-    const v = ad.querySelector("video") || document.querySelector("video");
-    if (v && isFinite(v.duration) && v.duration > 0) {
-      v.muted = true;
-      v.currentTime = v.duration;
-    }
-    const skip = document.querySelector(
-      ".ytp-ad-skip-button, .ytp-ad-skip-button-modern, .ytp-skip-ad-button, button[class*='skip']"
-    );
-    if (skip) skip.click();
-  }, 400);
-})();
 
 // AV1 을 지원하지 않는다고 알려 유튜브가 하드웨어 디코딩되는 VP9/H.264 를 주게 한다
 // (AV1 소프트웨어 디코딩은 시작이 느리고 배터리를 많이 쓴다).

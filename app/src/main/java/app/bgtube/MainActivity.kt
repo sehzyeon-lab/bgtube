@@ -63,6 +63,8 @@ class MainActivity : AppCompatActivity() {
                 Browser.loadUrl(this, tab.url)
             }
         }
+        // '내 페이지' 탭을 길게 누르면 앱 설정
+        findViewById<View>(R.id.nav_you).setOnLongClickListener { showSettings(); true }
         Browser.onUrl = { url -> runOnUiThread { tabFor(url)?.let { selected = it; paintNav() } } }
         tabFor(Browser.currentUrl)?.let { selected = it }
 
@@ -150,6 +152,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun keepActive() {
         Browser.session(this).setActive(true)
+    }
+
+    private fun showSettings() {
+        val checked = booleanArrayOf(Browser.adblockEnabled(this))
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("BgTube 설정 (v${BuildConfig.VERSION_NAME})")
+            .setMultiChoiceItems(arrayOf("광고 차단"), checked) { _, _, on -> checked[0] = on }
+            .setPositiveButton("적용") { _, _ -> Browser.setAdblock(this, checked[0]) }
+            .setNegativeButton("취소", null)
+            .show()
     }
 
     private fun navId(t: Tab) = resources.getIdentifier("nav_${t.key}", "id", packageName)

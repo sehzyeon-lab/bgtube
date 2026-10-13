@@ -10,6 +10,8 @@ import org.mozilla.geckoview.GeckoRuntime
 import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoSessionSettings
 import org.mozilla.geckoview.MediaSession
+import org.mozilla.geckoview.WebExtension
+import org.mozilla.geckoview.WebExtensionController
 
 /**
  * GeckoRuntime/GeckoSession 을 액티비티 수명과 분리해 앱 프로세스에 붙들어 둔다.
@@ -27,6 +29,25 @@ object Browser {
     private var main: GeckoSession? = null
     /** Playback.media 를 소유한(= 마지막으로 재생을 시작한) 세션. */
     private var mediaOwner: GeckoSession? = null
+    private var adblockExt: WebExtension? = null
+
+    private fun prefs(context: Context) =
+        context.applicationContext.getSharedPreferences("settings", Context.MODE_PRIVATE)
+
+    fun adblockEnabled(context: Context) = prefs(context).getBoolean("adblock", true)
+
+    fun setAdblock(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean("adblock", enabled).apply()
+        applyAdblock(context.applicationContext)
+        main?.reload()
+    }
+
+    private fun applyAdblock(app: Context) {
+        val ext = adblockExt ?: return
+        val c = runtime?.webExtensionController ?: return
+        if (adblockEnabled(app)) c.enable(ext, WebExtensionController.EnableSource.APP)
+        else c.disable(ext, WebExtensionController.EnableSource.APP)
+    }
 
     var canGoBack = false
     var onFullScreen: ((Boolean) -> Unit)? = null
@@ -73,8 +94,11 @@ object Browser {
             runtime = it
             // 페이지가 숨김 상태가 되지 않도록 visibility API 를 덮어쓰는 내장 확장.
             it.webExtensionController.ensureBuiltIn(EXTENSION_URI, EXTENSION_ID)
-            // 광고 차단 (플레이어 응답에서 광고 정보 제거)
-            it.webExtensionController.ensureBuiltIn(ADBLOCK_URI, ADBLOCK_ID)
+            // 광고 차단 (설정에서 켜고 끌 수 있음)
+            it.webExtensionController.ensureBuiltIn(ADBLOCK_URI, ADBLOCK_ID).accept { ext ->
+                adblockExt = ext
+                applyAdblock(app)
+            }
         }
         val s = GeckoSession(GeckoSessionSettings.Builder().usePrivateMode(false).build())
         installDelegates(app, s)
