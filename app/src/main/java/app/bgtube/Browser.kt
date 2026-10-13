@@ -27,6 +27,7 @@ object Browser {
     var canGoBack = false
     var onFullScreen: ((Boolean) -> Unit)? = null
     var onSessionLost: (() -> Unit)? = null
+    var onPlaying: ((Boolean) -> Unit)? = null
 
     fun session(context: Context): GeckoSession {
         session?.let { return it }
@@ -80,6 +81,7 @@ object Browser {
 
             override fun onDeactivated(session: GeckoSession, mediaSession: MediaSession) {
                 Playback.reset()
+                onPlaying?.invoke(Playback.playing)
                 Playback.notifyChanged()
             }
 
@@ -107,16 +109,19 @@ object Browser {
                 Playback.media = mediaSession
                 Playback.playing = true
                 startService(app)
+                onPlaying?.invoke(Playback.playing)
                 Playback.notifyChanged()
             }
 
             override fun onPause(session: GeckoSession, mediaSession: MediaSession) {
                 Playback.playing = false
+                onPlaying?.invoke(Playback.playing)
                 Playback.notifyChanged()
             }
 
             override fun onStop(session: GeckoSession, mediaSession: MediaSession) {
                 Playback.playing = false
+                onPlaying?.invoke(Playback.playing)
                 Playback.notifyChanged()
             }
 

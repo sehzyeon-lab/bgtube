@@ -2,9 +2,14 @@ package app.bgtube
 
 import android.Manifest
 import android.content.Intent
+import android.app.PictureInPictureParams
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
+import android.util.Rational
+import android.view.WindowManager
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -17,6 +22,7 @@ import org.mozilla.geckoview.GeckoView
 class MainActivity : AppCompatActivity() {
     private lateinit var geckoView: GeckoView
     private var attached = false
+    private var fullscreen = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,13 +40,23 @@ class MainActivity : AppCompatActivity() {
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (Browser.canGoBack) Browser.session(this@MainActivity).goBack()
+                val session = Browser.session(this@MainActivity)
+                if (fullscreen) session.exitFullScreen() // 전체화면이면 먼저 전체화면 해제
+                else if (Browser.canGoBack) session.goBack()
                 else moveTaskToBack(true) // 종료하지 않고 백그라운드로 보내 재생 유지
             }
         })
 
         Browser.onFullScreen = ::setFullscreen
         Browser.onSessionLost = { runOnUiThread { attachSession(force = true) } }
+        Browser.onPlaying = { playing ->
+            runOnUiThread {
+                // 공식 유튜브처럼 재생 중에는 화면이 꺼지지 않게 한다.
+                if (playing) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                updatePipParams()
+            }
+        }
 
         if (Build.VERSION.SDK_INT >= 33 &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
@@ -60,8 +76,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleIntent(intent: Intent?) {
-        val data = intent?.data ?: return
-        if (intent.action == Intent.ACTION_VIEW) Browser.loadUrl(this, data.toString())
+        when (intent?.action) {
+            Intent.ACTION_VIEW -> intent.data?.let { Browser.loadUrl(this, it.toString()) }
+            // 다른 앱에서 '공유'로 보낸 유튜브 링크 열기
+            Intent.ACTION_SEND -> intent.getStringExtra(Intent.EXTRA_TEXT)
+                ?.let { Regex("https?://\\S+").find(it)?.value }
+                ?.takeIf { it.contains("youtu") }
+                ?.let { Browser.loadUrl(this, it) }
+        }
     }
 
     private fun attachSession(force: Boolean = false) {
@@ -90,6 +112,7 @@ class MainActivity : AppCompatActivity() {
     private fun keepActive() = Browser.session(this).setActive(true)
 
     private fun setFullscreen(enabled: Boolean) {
+        fullscreen = enabled
         val c = WindowInsetsControllerCompat(window, window.decorView)
         if (enabled) {
             c.hide(WindowInsetsCompat.Type.systemBars())
@@ -97,11 +120,45 @@ class MainActivity : AppCompatActivity() {
         } else {
             c.show(WindowInsetsCompat.Type.systemBars())
         }
+        // 전체화면이면 가로로, 해제되면 기기 방향을 따른다 (공식 앱 동작).
+        requestedOrientation = if (enabled) ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        else ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        if (Build.VERSION.SDK_INT >= 28) {
+            window.attributes = window.attributes.also {
+                it.layoutInDisplayCutoutMode = if (enabled)
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                else WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
+            }
+        }
+        updatePipParams()
+    }
+
+    // 전체화면으로 영상 재생 중일 때 홈으로 나가면 작은 창(PiP)으로 전환한다.
+    private fun updatePipParams() {
+        val b = PictureInPictureParams.Builder().setAspectRatio(Rational(16, 9))
+        if (Build.VERSION.SDK_INT >= 31) b.setAutoEnterEnabled(fullscreen && Playback.playing)
+        try { setPictureInPictureParams(b.build()) } catch (e: Exception) { android.util.Log.w("BgTube", "pip", e) }
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if (Build.VERSION.SDK_INT < 31 && fullscreen && Playback.playing) {
+            try {
+                enterPictureInPictureMode(
+                    PictureInPictureParams.Builder().setAspectRatio(Rational(16, 9)).build(),
+                )
+            } catch (e: Exception) { android.util.Log.w("BgTube", "pip", e) }
+        }
+    }
+
+    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
     }
 
     override fun onDestroy() {
         Browser.onFullScreen = null
         Browser.onSessionLost = null
+        Browser.onPlaying = null
         if (attached) geckoView.releaseSession()
         super.onDestroy()
     }
