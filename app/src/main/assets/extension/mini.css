@@ -1,0 +1,13 @@
+/* 작은 창(미니 플레이어)/PiP 처럼 뷰포트가 작은 16:9 일 때 영상만 꽉 차게 보여 준다. */
+html.bgtube-mini, html.bgtube-mini body { overflow: hidden !important; background: #000 !important; }
+html.bgtube-mini body * {
+  visibility: hidden !important;
+  transform: none !important; filter: none !important; perspective: none !important;
+  contain: none !important; will-change: auto !important;
+}
+html.bgtube-mini video {
+  visibility: visible !important;
+  position: fixed !important; top: 0 !important; left: 0 !important;
+  width: 100vw !important; height: 100vh !important; max-width: none !important; max-height: none !important;
+  z-index: 2147483647 !important; object-fit: contain !important; background: #000 !important;
+}

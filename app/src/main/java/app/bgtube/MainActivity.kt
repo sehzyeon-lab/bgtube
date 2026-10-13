@@ -9,7 +9,9 @@ import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.util.Rational
+import android.view.View
 import android.view.WindowManager
+import android.widget.ImageView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -21,13 +23,24 @@ import org.mozilla.geckoview.GeckoView
 
 class MainActivity : AppCompatActivity() {
     private lateinit var geckoView: GeckoView
-    private var attached = false
+    private lateinit var miniBox: View
+    private lateinit var miniGecko: GeckoView
+    private lateinit var miniPlay: ImageView
     private var fullscreen = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         geckoView = findViewById(R.id.gecko)
+        miniBox = findViewById(R.id.mini_box)
+        miniGecko = findViewById(R.id.mini_gecko)
+        miniPlay = findViewById(R.id.mini_play)
+        miniGecko.setViewBackend(GeckoView.BACKEND_TEXTURE_VIEW) // 본 화면 위에 겹쳐 그리기 위해
+        findViewById<View>(R.id.mini_tap).setOnClickListener { Browser.expandMini() }
+        findViewById<View>(R.id.mini_close).setOnClickListener { Browser.closeMini() }
+        miniPlay.setOnClickListener {
+            Playback.media?.let { if (Playback.playing) it.pause() else it.play() }
+        }
 
         val root = findViewById<android.view.View>(R.id.root)
         ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
@@ -42,18 +55,21 @@ class MainActivity : AppCompatActivity() {
             override fun handleOnBackPressed() {
                 val session = Browser.session(this@MainActivity)
                 if (fullscreen) session.exitFullScreen() // 전체화면이면 먼저 전체화면 해제
+                else if (Browser.enterMini(this@MainActivity)) { /* 영상이 작은 창으로 내려간다 */ }
                 else if (Browser.canGoBack) session.goBack()
                 else moveTaskToBack(true) // 종료하지 않고 백그라운드로 보내 재생 유지
             }
         })
 
         Browser.onFullScreen = ::setFullscreen
-        Browser.onSessionLost = { runOnUiThread { attachSession(force = true) } }
+        Browser.onSessionLost = { runOnUiThread { refreshViews() } }
+        Browser.onLayoutChanged = { runOnUiThread { refreshViews() } }
         Browser.onPlaying = { playing ->
             runOnUiThread {
                 // 공식 유튜브처럼 재생 중에는 화면이 꺼지지 않게 한다.
                 if (playing) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                miniPlay.setImageResource(if (playing) R.drawable.ic_pause else R.drawable.ic_play)
                 updatePipParams()
             }
         }
@@ -65,7 +81,7 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
         }
 
-        attachSession()
+        refreshViews()
         handleIntent(intent)
         UpdateChecker.check(this)
     }
@@ -86,11 +102,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun attachSession(force: Boolean = false) {
-        if (attached && !force) return
-        if (attached) geckoView.releaseSession()
+    /** main/mini 세션을 각각의 GeckoView 에 다시 붙인다. */
+    private fun refreshViews() {
+        geckoView.releaseSession()
+        miniGecko.releaseSession()
         geckoView.setSession(Browser.session(this))
-        attached = true
+        val mini = Browser.miniSession()
+        if (mini != null) {
+            miniGecko.setSession(mini)
+            miniBox.visibility = View.VISIBLE
+        } else {
+            miniBox.visibility = View.GONE
+        }
     }
 
     override fun onResume() {
@@ -109,7 +132,10 @@ class MainActivity : AppCompatActivity() {
         keepActive()
     }
 
-    private fun keepActive() = Browser.session(this).setActive(true)
+    private fun keepActive() {
+        Browser.session(this).setActive(true)
+        Browser.miniSession()?.setActive(true)
+    }
 
     private fun setFullscreen(enabled: Boolean) {
         fullscreen = enabled
@@ -159,7 +185,9 @@ class MainActivity : AppCompatActivity() {
         Browser.onFullScreen = null
         Browser.onSessionLost = null
         Browser.onPlaying = null
-        if (attached) geckoView.releaseSession()
+        Browser.onLayoutChanged = null
+        geckoView.releaseSession()
+        miniGecko.releaseSession()
         super.onDestroy()
     }
 }

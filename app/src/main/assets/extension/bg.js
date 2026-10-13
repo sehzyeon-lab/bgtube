@@ -57,3 +57,36 @@
     origSet.call(ms, "previoustrack", fallback.previoustrack);
   } catch (e) {}
 })();
+
+// 미니 플레이어/PiP: 뷰포트가 작고 가로로 긴 16:9 이면 영상만 보이게 하는 클래스를 켠다.
+(function () {
+  const root = document.documentElement;
+  const check = () => {
+    if (!root) return;
+    const mini = innerWidth <= 380 && innerHeight > 0 && innerWidth / innerHeight > 1.4;
+    root.classList.toggle("bgtube-mini", mini);
+  };
+  addEventListener("resize", check);
+  document.addEventListener("DOMContentLoaded", check);
+  check();
+})();
+
+// 모바일 웹의 '앱 열기' 버튼/배너를 숨긴다.
+(function () {
+  const KEYS = ["앱 열기", "앱에서 열기", "Open app", "Open in app", "OPEN APP"];
+  const hide = () => {
+    for (const el of document.querySelectorAll("a, button")) {
+      const t = (el.textContent || "").trim();
+      if (t && t.length <= 14 && KEYS.some((k) => t.includes(k))) el.style.display = "none";
+    }
+  };
+  let timer = 0;
+  const schedule = () => {
+    if (timer) return;
+    timer = setTimeout(() => { timer = 0; hide(); }, 300);
+  };
+  document.addEventListener("DOMContentLoaded", () => {
+    new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
+    hide();
+  });
+})();

@@ -8,6 +8,7 @@
     {
       "matches": ["*://*.youtube.com/*", "*://youtube.com/*"],
       "js": ["bg.js"],
+      "css": ["mini.css"],
       "run_at": "document_start",
       "all_frames": true
     }

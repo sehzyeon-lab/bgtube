@@ -9,4 +9,50 @@
         android:id="@+id/gecko"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
+    <!-- 미니 플레이어: 영상 세션을 작게 보여 주는 창 -->
+    <FrameLayout
+        android:id="@+id/mini_box"
+        android:layout_width="240dp"
+        android:layout_height="135dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="16dp"
+        android:background="#000000"
+        android:elevation="12dp"
+        android:visibility="gone">
+
+        <org.mozilla.geckoview.GeckoView
+            android:id="@+id/mini_gecko"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <View
+            android:id="@+id/mini_tap"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="@string/mini_expand" />
+
+        <ImageView
+            android:id="@+id/mini_close"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="top|end"
+            android:padding="7dp"
+            android:background="#99000000"
+            android:src="@drawable/ic_close"
+            android:contentDescription="@string/close" />
+
+        <ImageView
+            android:id="@+id/mini_play"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="bottom|start"
+            android:padding="6dp"
+            android:background="#99000000"
+            android:src="@drawable/ic_pause"
+            android:contentDescription="@string/pause" />
+    </FrameLayout>
 </FrameLayout>
