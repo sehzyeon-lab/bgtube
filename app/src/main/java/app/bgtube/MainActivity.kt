@@ -68,6 +68,7 @@ class MainActivity : AppCompatActivity() {
             override fun handleOnBackPressed() {
                 val session = Browser.session(this@MainActivity)
                 if (fullscreen) session.exitFullScreen() // 전체화면이면 먼저 전체화면 해제
+                else if (Browser.backFromVideo(this@MainActivity)) { /* 영상 이전 화면으로 */ }
                 else if (Browser.canGoBack) session.goBack()
                 else moveTaskToBack(true) // 종료하지 않고 백그라운드로 보내 재생 유지
             }

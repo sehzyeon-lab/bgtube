@@ -36,6 +36,28 @@ object Browser {
     var onUrl: ((String) -> Unit)? = null
     var currentUrl: String = START_URL
         private set
+    private var history: GeckoSession.HistoryDelegate.HistoryList? = null
+
+    private fun isWatch(url: String) = android.net.Uri.parse(url).path?.startsWith("/watch") == true
+
+    /**
+     * 공식 앱처럼: 영상 화면에서 뒤로가기 → 영상에 들어오기 전 화면(홈/검색/구독 등)으로.
+     * 자동재생·추천으로 이어 본 영상들은 건너뛴다.
+     */
+    fun backFromVideo(context: Context): Boolean {
+        if (!isWatch(currentUrl)) return false
+        val s = session(context)
+        history?.let { h ->
+            for (i in h.currentIndex - 1 downTo 0) {
+                if (!isWatch(h[i].uri)) {
+                    s.gotoHistoryIndex(i)
+                    return true
+                }
+            }
+        }
+        s.loadUri(START_URL)
+        return true
+    }
 
     fun session(context: Context): GeckoSession = main ?: create(context, START_URL).also { main = it }
 
@@ -101,6 +123,15 @@ object Browser {
                     Log.w(TAG, "share", e)
                     GeckoResult.fromValue(prompt.confirm(GeckoSession.PromptDelegate.SharePrompt.Result.FAILURE))
                 }
+            }
+        }
+
+        s.historyDelegate = object : GeckoSession.HistoryDelegate {
+            override fun onHistoryStateChange(
+                session: GeckoSession,
+                historyList: GeckoSession.HistoryDelegate.HistoryList,
+            ) {
+                if (session === main) history = historyList
             }
         }
 
