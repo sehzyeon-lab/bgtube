@@ -13,6 +13,7 @@ import android.media.MediaMetadata
 import android.media.session.MediaSession as AndroidMediaSession
 import android.media.session.PlaybackState
 import android.os.IBinder
+import android.net.wifi.WifiManager
 import android.os.PowerManager
 import android.os.SystemClock
 import androidx.core.app.ServiceCompat
@@ -24,6 +25,8 @@ import androidx.core.app.ServiceCompat
 class MediaService : Service() {
     private lateinit var session: AndroidMediaSession
     private var wakeLock: PowerManager.WakeLock? = null
+    /** 화면이 꺼져도 Wi-Fi 가 절전으로 들어가 영상 데이터가 끊기지 않게 한다. */
+    private var wifiLock: WifiManager.WifiLock? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -143,8 +146,16 @@ class MediaService : Service() {
                     .apply { setReferenceCounted(false) }
             }
             if (wakeLock?.isHeld != true) wakeLock?.acquire(6 * 60 * 60 * 1000L)
-        } else if (wakeLock?.isHeld == true) {
-            wakeLock?.release()
+            if (wifiLock == null) {
+                @Suppress("DEPRECATION")
+                wifiLock = applicationContext.getSystemService(WifiManager::class.java)
+                    ?.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "BgTube:playback")
+                    ?.apply { setReferenceCounted(false) }
+            }
+            if (wifiLock?.isHeld == false) wifiLock?.acquire()
+        } else {
+            if (wakeLock?.isHeld == true) wakeLock?.release()
+            if (wifiLock?.isHeld == true) wifiLock?.release()
         }
     }
 

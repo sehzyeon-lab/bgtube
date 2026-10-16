@@ -108,6 +108,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         refreshViews()
+        askBatteryExemptionOnce()
         handleIntent(intent)
         UpdateChecker.check(this)
     }
@@ -154,6 +155,35 @@ class MainActivity : AppCompatActivity() {
         Browser.session(this).setActive(true)
     }
 
+    /**
+     * 삼성 등은 배터리 최적화 대상 앱의 백그라운드 동작을 제한해 재생이 끊길 수 있다.
+     * 처음 한 번만 '제한 없음'(최적화 예외)을 요청한다.
+     */
+    private fun askBatteryExemptionOnce() {
+        val prefs = getSharedPreferences("settings", MODE_PRIVATE)
+        if (prefs.getBoolean("asked_battery", false)) return
+        val pm = getSystemService(android.os.PowerManager::class.java)
+        if (pm.isIgnoringBatteryOptimizations(packageName)) return
+        prefs.edit().putBoolean("asked_battery", true).apply()
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("백그라운드 재생 끊김 방지")
+            .setMessage("화면을 끄거나 다른 앱을 쓰는 동안 재생이 끊기지 않도록, 다음 화면에서 BgTube의 배터리 사용을 '허용'해 주세요.")
+            .setPositiveButton("설정하기") { _, _ -> openBatteryExemption() }
+            .setNegativeButton("나중에", null)
+            .show()
+    }
+
+    private fun openBatteryExemption() {
+        try {
+            @android.annotation.SuppressLint("BatteryLife")
+            val i = Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                .setData(android.net.Uri.parse("package:$packageName"))
+            startActivity(i)
+        } catch (e: Exception) {
+            startActivity(Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+        }
+    }
+
     private fun showSettings() {
         val checked = booleanArrayOf(Browser.adblockEnabled(this))
         androidx.appcompat.app.AlertDialog.Builder(this)
@@ -161,6 +191,7 @@ class MainActivity : AppCompatActivity() {
             .setMultiChoiceItems(arrayOf("광고 차단"), checked) { _, _, on -> checked[0] = on }
             .setPositiveButton("적용") { _, _ -> Browser.setAdblock(this, checked[0]) }
             .setNegativeButton("취소", null)
+            .setNeutralButton("배터리 제한 해제") { _, _ -> openBatteryExemption() }
             .show()
     }
 

@@ -145,3 +145,27 @@
     } catch (e) {}
   }, 2000);
 })();
+
+// 유튜브는 한동안 조작이 없으면 '동영상이 일시중지되었습니다. 계속 시청하시겠습니까?'를 띄우고 멈춘다.
+// 백그라운드에서는 이 창이 안 보여 그냥 끊긴 것처럼 느껴진다.
+//  - 마지막 활동 시각(_lact)을 주기적으로 갱신해 질문 자체가 안 나오게 하고
+//  - 그래도 나오면 '예/계속'을 눌러 재생을 이어간다.
+(function () {
+  const w = window.wrappedJSObject;
+  setInterval(() => { try { w._lact = Date.now(); } catch (e) {} }, 60000);
+
+  const ASK = /계속 시청|일시중지되었습니다|Continue watching|Video paused/i;
+  const YES = /^(예|네|계속|Yes|Continue)/i;
+  setInterval(() => {
+    for (const dlg of document.querySelectorAll(
+      "ytm-confirm-dialog-renderer, yt-confirm-dialog-renderer, tp-yt-paper-dialog, [role='dialog'], dialog"
+    )) {
+      if (!ASK.test(dlg.textContent || "")) continue;
+      for (const b of dlg.querySelectorAll("button, [role='button']")) {
+        if (YES.test((b.textContent || "").trim())) { b.click(); break; }
+      }
+      const v = document.querySelector("video");
+      if (v && v.paused) { try { v.play(); } catch (e) {} }
+    }
+  }, 3000);
+})();
